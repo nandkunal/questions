@@ -7,8 +7,18 @@ repositories {
 
 dependencies {  
 	  compile 'com.google.guava:guava:18.0'
+	  testCompile 'junit:junit:4.12'
 }
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.2'
+}
+
+test {
+	include "com/lynchdt/questions/**"
+	testLogging {
+		showStandardStreams true
+	 	events "failed", "passed", "skipped"
+	 	exceptionFormat "short"
+	}
 }
