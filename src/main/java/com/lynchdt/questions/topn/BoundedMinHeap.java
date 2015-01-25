@@ -1,9 +1,9 @@
-package com.lynchdt.questions;
+package com.lynchdt.questions.topn;
 
 import java.util.ArrayList;
 
 /**
- * A min heap is a type of binary tree where every Node is greater than or equal to it's parent. 
+ * A min-heap is a type of binary tree where every Node is greater than or equal to it's parent. 
  *
  * This is useful for Top-N since the minimum property of the heap will 
  * mean the smallest number in the set N so far will be the root node. Removal 
@@ -29,7 +29,9 @@ public class BoundedMinHeap {
  	 * This is still pretty interesting for Long integers. 
 	 */
 	private ArrayList<Long>heap;
-	
+	/**
+	 * Using Array here so N will have to be Integer.MAX_VALUE
+	 */
 	private int maxSize;
 	
 	public BoundedMinHeap(int maxSize) {
@@ -42,44 +44,44 @@ public class BoundedMinHeap {
 		long minimum = heap.get(0);
 		heap.set(0, heap.get(heap.size()-1));	
 		heap.remove(heap.size()-1);
+		/** May have broken heap property */
 		minHeapify(0);
 		return minimum;
 	}
 	
+	/**
+	 * This is the biggest customization here. 
+	 * 
+	 * Only insert if greater than the smallest node
+	 * of the min heap. This leaves us with top-N in the heap
+	 * and the minimum element (heap[0]) to evict if necessary.
+	 */
 	public void insert(long value) {
-		if(heap.size()==maxSize) {
-			extractMin();
+		if(heap.size()==0) {
+			heap.add(value);
 		}
-		heap.add(Long.MAX_VALUE);
-		siftUp(heap.size()-1, value);
-	}
-	
-	public ArrayList<Long> getHeap() {
-		return heap;
+		else if (heap.get(0)<value) {
+			if(heap.size()==maxSize) {
+				extractMin();
+			}
+			heap.add(Long.MAX_VALUE);
+			siftUp(heap.size()-1, value);
+		}
 	}
 	
 	/**
-	 * I think this is a nicer name than decrease-key
+	 * I think this is a nicer name than decrease-key. Set the value
+	 * at the index, then exchange with parents until in the right position.
 	 */
 	protected void siftUp(int index, long value) {
-		if (value > heap.get(index)) { throw new RuntimeException("Index is bigger than heap"); }
+		if (index > heap.size()-1) {
+			throw new RuntimeException("Index is bigger than heap");
+		}
 		heap.set(index, value);
 		while(index > 0 && heap.get(parent(index)) > heap.get(index)) {
 			exchange(index, parent(index));
 			index = parent(index);
 		}
-	}
-
-	protected int parent(int position) {
-		return (position/2);
-	}
-	
-	protected int leftChild(int position) {
-		return (2* position) + 1;
-	}
-	
-	protected int rightChild(int position) {
-		return (2 * position) + 2;
 	}
 	
 	protected void exchange(int first, int second) {
@@ -88,6 +90,10 @@ public class BoundedMinHeap {
 	    heap.set(second, temp);
 	}
 	
+	/**
+	 * There is recursion here - works given some unknown function of heap.size()
+	 * and available stack.
+	 */
 	protected void minHeapify(int currentIndex) {
 		int lIndex = leftChild(currentIndex);
 		int rIndex = rightChild(currentIndex);
@@ -125,6 +131,28 @@ public class BoundedMinHeap {
 			}		
 		}
 		return true;
+	}
+	
+	public void merge(BoundedMinHeap otherHeap) {
+		heap.forEach((element) -> {
+			otherHeap.insert(element);
+		});
+	}
+	
+	public ArrayList<Long> getHeap() {
+		return heap;
+	}
+
+	protected int parent(int position) {
+		return (position/2);
+	}
+	
+	protected int leftChild(int position) {
+		return (2* position) + 1;
+	}
+	
+	protected int rightChild(int position) {
+		return (2 * position) + 2;
 	}
 	
 	
