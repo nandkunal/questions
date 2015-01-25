@@ -17,7 +17,7 @@ public class FlattenerTest {
 	
 	private final int ONE_MILLION_DOLLARS = 10000000;
 	
-	/** Strings are a nice short-hand when comparing equality later */
+	/** Strings are a nice short-hand when comparing for equality later */
 	private final String QUESTION_TEST_RESULT = "[1, 2, 3, 4]";
 	private final String OTHER_TEST_RESULT = "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]";
 	
@@ -105,7 +105,7 @@ public class FlattenerTest {
 	/**
 	 * This is too slow to be a frequently run unit test, but given the calculations
 	 * above there should be enough Heap for it to complete on a developer machine. The key 
-	 * is to mimic  mimics how recursion would wind and unwind the stack, by 
+	 * is to mimic how recursion would wind and unwind the stack -
 	 * using an actual stack. Since stack will be allocated on the Heap we will have lots
 	 * more memory to exhaust.
 	 * 

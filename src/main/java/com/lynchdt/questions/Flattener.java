@@ -17,7 +17,7 @@ import com.google.common.base.Preconditions;
  * i.e. for the case that some level of nesting contains a reference to a previous level. See the Unit 
  * tests for expectations of what will happen. A Hash<Set> containing references to visited Lists
  * could be built up and examined. Flattening can stop at the first detection of a cycle, recovering 
- * might be a bit tricky since we need to backtrack.
+ * might be a bit trickier.
  */
 public class Flattener {
 
