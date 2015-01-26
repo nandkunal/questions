@@ -7,11 +7,19 @@ repositories {
 
 dependencies {  
 	  compile 'com.google.guava:guava:18.0'
-	  testCompile 'junit:junit:4.12'
+	  testCompile 'junit:junit:4.12',
+                  'org.mockito:mockito-all:1.10.8',
+                  'org.powermock:powermock-api-mockito:1.6.1',
+                  'org.powermock:powermock-module-junit4:1.6.1'
 }
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.2'
+}
+
+task copyToLib( type: Copy ) {
+    into "$buildDir/libs/lib"
+	from configurations.runtime
 }
 
 test {
@@ -22,3 +30,14 @@ test {
 	 	exceptionFormat "short"
 	}
 }
+
+jar {
+    manifest {
+      attributes  "Implementation-Title" : "TopN Reader",
+                  "Implementation-Version" : "1.0",
+                  "Main-Class" :"com.lynchdt.questions.topn.TopN"
+       def manifestClasspath = configurations.runtime.collect {  "./lib/" + it.getName() }.join(' ')
+       attributes 'Class-Path': manifestClasspath
+     }
+}
+jar.dependsOn copyToLib

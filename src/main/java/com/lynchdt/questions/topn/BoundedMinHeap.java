@@ -15,10 +15,7 @@ import java.util.ArrayList;
  * iteration over the heap. There was no sorting requirement, but heap-sort would fit in 
  * nicely here. I'll come back to that if I have time. 
  * 
- * Implementation adapted from Intro to Algorithms - Chapter 6. 
- * 
- * Guava's Min-Max PriorityQueue could just as easily fit in for top-N with a few tweaks.
- * http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/collect/MinMaxPriorityQueue.html
+ * Implementation adapted from Intro to Algorithms - Chapter 6.
  **/
 public class BoundedMinHeap {
 	/**
@@ -42,6 +39,14 @@ public class BoundedMinHeap {
 	public BoundedMinHeap(int maxSize) {
 		this.maxSize = maxSize;
 		heap = new ArrayList<>(maxSize);
+	}
+	
+	protected int getSize() {
+		return size;
+	}
+	
+	protected int getMaxSize() {
+		return maxSize;
 	}
 	
 	protected long extractMin() {

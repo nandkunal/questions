@@ -18,10 +18,9 @@ import java.util.concurrent.Executors;
  * are periodically and finally merged into a BoundedMinHeap to get the top-N of the top-N in M.
  */
 public class TopN {
-	
 	/**
-	 * A bounded blocking queue allows back-off for the producers and 
-	 * blocking takes for the workers. Very convenient. 
+	 * A bounded blocking queue allows back-off for the producers when queue is full and 
+	 * blocking, timed polls for the workers. All thread safe and fuzzy. Very convenient. 
 	 */
 	private BlockingQueue<Long> workQueue;
 
@@ -36,26 +35,33 @@ public class TopN {
 	private final List<String> files;
 	
 	/**
-	 * The top-N as a union of top-Ns from the workers.
+	 * The top-N as a union of all top-Ns from the workers.
 	 */
 	private final BoundedMinHeap overallHeap;
 	
-	/** These are arbitrary */
 	private final int UPDATE_INTERVAL = 1000;
+	/**
+	 * Some time to back off from asking 'are we there yet' when required.
+	 */
 	private final int BACKOFF_INTERVAL = 100;
 	
 
 	public TopN(List<String> files, int N, int workerCount, int queueSize) {
+		if(files==null || files.isEmpty() || N <= 0 || workerCount <= 0 || queueSize <= 0) {
+			throw new IllegalArgumentException("Invalid topN parameters");
+		}
 		workQueue = new ArrayBlockingQueue<Long>(queueSize, false);
 		overallHeap = new BoundedMinHeap(N);
+		workers = new ArrayList<>();
+		fileReaders = new ArrayList<NumberFileReader>();
 		this.workerCount = workerCount;
 		this.N=N;
 		this.files=files;
 	}
 
 	public void execute() throws Exception {
-		prepareWorkerPool();
-		prepareAndStartFileReader();
+		prepareAndStartWorkerPool();
+		prepareAndStartFileReaders();
 		reportProgress();
 		reportResult();
 	}
@@ -63,9 +69,8 @@ public class TopN {
 	/**
 	 * These guys will hang around until there is work to do.
 	 */
-	private void prepareWorkerPool() {
-		workerExecutor = Executors.newCachedThreadPool();
-		workers = new ArrayList<>();
+	protected void prepareAndStartWorkerPool() {
+		workerExecutor = Executors.newFixedThreadPool(workerCount);
 		for (int i = 0; i < workerCount; i++) {
 			TopNWorker worker = new TopNWorker(N, workQueue);
 			workers.add(worker);
@@ -73,9 +78,8 @@ public class TopN {
 		}
 	}
 
-	private void prepareAndStartFileReader() {
-		fileReaderExecutor = Executors.newFixedThreadPool(7);
-		fileReaders = new ArrayList<NumberFileReader>();
+	protected void prepareAndStartFileReaders() {
+		fileReaderExecutor = Executors.newFixedThreadPool(files.size());
 		for(String file : files) {
 			NumberFileReader reader = new NumberFileReader(workQueue, file);
 			fileReaders.add(reader);
@@ -83,36 +87,17 @@ public class TopN {
 		}
 	}
 
-	private boolean filesRead() {
-		boolean read = true;
-		for (NumberFileReader reader : fileReaders) {
-			read = read && reader.isFinished();
-		}
-		return read;
-	}
-
-	private long linesRead() {
-		long sum = 0;
-		for (NumberFileReader reader : fileReaders) {
-			sum += reader.getRead();
-		}
-		;
-		return sum;
-	}
-
 	/**
-	 * Making a bet that N will be small, the lines to read will be reasonably 
-	 * large and that some user will want feedback while the operation is in progress. 
+	 * Making an assumption that N will be typically small, the lines to read will be reasonably 
+	 * large and that some user will want feedback while the operation is in progress. If N is typically
+	 * large, then the user might be another machine and we may write this differently, but the idea holds. 
 	 * 
-	 * I think user engagement/communication on progress is important. Reassuring the user
-	 * the computer is working, and giving a sense of when the results might be ready. 
+	 * Some threads have to stop processing while reports are processed, so throughput is 
+	 * not at maximum - it's worthwhile trade-off though.
 	 */
-	private void reportProgress() throws Exception {
-		System.out.println("Partial Results for Top-" + this.N + " -> ");
+	protected void reportProgress() throws Exception {
 		while (!filesRead()) {
-			for (TopNWorker worker : workers) {
-				worker.applyToHeap(overallHeap);
-			}
+			mergePartialResults();
 			overallHeap.heapSort();
 			System.out.println("Top " + this.N
 					+ " results after about " + linesRead() + " lines "
@@ -121,7 +106,7 @@ public class TopN {
 		}
 	}
 
-	public void reportResult() throws Exception {
+	protected void reportResult() throws Exception {
 		if(!filesRead()) { 
 			throw new RuntimeException("Cannot report results - file reading in progress.");
 		}
@@ -133,7 +118,7 @@ public class TopN {
 		sortAndPrint();
 	}
 	
-	private void sortAndPrint() {
+	protected void sortAndPrint() {
 		overallHeap.heapSort();
 		System.out.println("Top-" + this.N + " -> "
 			+ overallHeap.toString());
@@ -176,6 +161,22 @@ public class TopN {
 		workerExecutor.shutdownNow();
 	}
 
+	private boolean filesRead() {
+		boolean read = true;
+		for (NumberFileReader reader : fileReaders) {
+			read = read && reader.isFinished();
+		}
+		return read;
+	}
+
+	private long linesRead() {
+		long sum = 0;
+		for (NumberFileReader reader : fileReaders) {
+			sum += reader.getRead();
+		}
+		return sum;
+	}
+
 	public static void main(String argsv[]) throws Exception {
 		if(argsv.length<3) {
 			System.out.println("> java TopN <n> <workerCount> <queueSize> file1 [file2 .. fileM] ");
@@ -194,5 +195,31 @@ public class TopN {
 		topN.cleanUp();
 		timer.stop();
 		System.out.println("Complete in " + timer.toString());
+	}
+	
+	protected BoundedMinHeap getHeap() {
+		return this.overallHeap;
+	}
+	
+	protected int workerCount() {
+		return this.workerCount;
+	}
+	
+	protected int fileCount() {
+		return this.files.size();
+	}
+	
+	protected int getQueueCapacity() {
+		if(workQueue!=null)
+			return this.workQueue.remainingCapacity();
+		return 0;
+	}
+	
+	protected void setFileReaders(List<NumberFileReader> readers) {
+		this.fileReaders=readers;
+	}
+	
+	protected void setWorkers(List<TopNWorker> workers) {
+		this.workers = workers;
 	}
 }
