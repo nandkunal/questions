@@ -1,6 +1,7 @@
 package com.lynchdt.questions.topn;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -9,6 +10,8 @@ public class TopNWorker implements Runnable {
 	private final BlockingQueue<Long> workQueue;
 	private final int N;
 	private boolean done = false;
+	
+	private int POLL_TIMEOUT_SECS = 1;
 	
 	private AtomicBoolean running = new AtomicBoolean(true);
 	
@@ -40,9 +43,15 @@ public class TopNWorker implements Runnable {
 	
 	private void process() {
 		try {
-			Long work = workQueue.take();
-			modificationLock.lock();
-			heap.insert(work);
+			/**
+			 * Timeout the poll periodically, giving this thread a chance 
+			 * to check if it should no longer be looking for work.
+			 */
+			Long work = workQueue.poll(POLL_TIMEOUT_SECS, TimeUnit.SECONDS);
+			if(work!=null) {
+				acquireWriteLockOnHeap();
+				heap.insert(work);
+			}
 		}
 		catch(InterruptedException ex) { 
 			/** Thread pool is probably being cleaned up.
@@ -50,8 +59,7 @@ public class TopNWorker implements Runnable {
 			finish();
 		}
 		finally {
-			if(modificationLock.isHeldByCurrentThread())
-				modificationLock.unlock();
+			releaseWriteLockOnHeap();
 		}
 	}
 	

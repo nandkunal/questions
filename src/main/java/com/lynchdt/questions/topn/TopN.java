@@ -127,13 +127,7 @@ public class TopN {
 		}
 		waitForQueueToDrain();
 		instructWorkersToFinish();
-		/**
-		 * This is fudge. What I really want is a signal back from the workers. There's a 
-		 * horrible assumption here implying N will always be small. As N grows the side-effects
-		 * of this race-condition amplify. Need more time to think this out. 
-		 */
-		if (workersStillWorking())
-			Thread.sleep(UPDATE_INTERVAL);
+		waitForWorkersToFinish();
 		cleanUp();
 		mergePartialResults();
 		System.out.println("Top-" + this.N + " -> "
@@ -150,6 +144,12 @@ public class TopN {
 		workers.forEach((worker) -> {
 			worker.finish();
 		});
+	}
+	
+	private void waitForWorkersToFinish() throws Exception {
+		while(workersStillWorking()) {
+			Thread.sleep(BACKOFF_INTERVAL);
+		}
 	}
 	
 	private boolean workersStillWorking() {

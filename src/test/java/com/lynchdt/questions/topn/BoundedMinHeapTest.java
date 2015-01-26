@@ -135,7 +135,7 @@ public class BoundedMinHeapTest {
 	}
 	
 	@Test public void heapSort_givenUnorderedHeap_sorts() {
-		heap.setHeap(Lists.newArrayList(6L, 5L, 19L, 4L, 9L, 28L));
+		heap.setHeap(Lists.newArrayList(1L, 3L, 6L, 4L, 9L, 28L));
 		
 		heap.heapSort();
 		
