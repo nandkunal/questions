@@ -33,6 +33,11 @@ public class BoundedMinHeap {
 	 * Using Array here so N will have to be Integer.MAX_VALUE
 	 */
 	private int maxSize;
+	/**
+	 * Maintain this separate to heap.size() for purposes of 
+	 * HeapSort later.
+	 */
+	private int size = 0;
 	
 	public BoundedMinHeap(int maxSize) {
 		this.maxSize = maxSize;
@@ -40,10 +45,11 @@ public class BoundedMinHeap {
 	}
 	
 	protected long extractMin() {
-		if(heap.size() == 0) { throw new RuntimeException("Heap underflow"); }
+		if(size == 0) { throw new RuntimeException("Heap underflow"); }
 		long minimum = heap.get(0);
-		heap.set(0, heap.get(heap.size()-1));	
-		heap.remove(heap.size()-1);
+		heap.set(0, heap.get(size-1));	
+		heap.remove(size-1);
+		size--;
 		/** May have broken heap property */
 		minHeapify(0);
 		return minimum;
@@ -57,15 +63,17 @@ public class BoundedMinHeap {
 	 * and the minimum element (heap[0]) to evict if necessary.
 	 */
 	public void insert(long value) {
-		if(heap.size()==0) {
+		if(size==0) {
 			heap.add(value);
+			size++;
 		}
 		else if (heap.get(0)<value) {
-			if(heap.size()==maxSize) {
+			if(size==maxSize) {
 				extractMin();
 			}
 			heap.add(Long.MAX_VALUE);
-			siftUp(heap.size()-1, value);
+			size++;
+			siftUp(size-1, value);
 		}
 	}
 	
@@ -74,7 +82,7 @@ public class BoundedMinHeap {
 	 * at the index, then exchange with parents until in the right position.
 	 */
 	protected void siftUp(int index, long value) {
-		if (index > heap.size()-1) {
+		if (index > size-1) {
 			throw new RuntimeException("Index is bigger than heap");
 		}
 		heap.set(index, value);
@@ -98,12 +106,12 @@ public class BoundedMinHeap {
 		int lIndex = leftChild(currentIndex);
 		int rIndex = rightChild(currentIndex);
 		int smallestIndex;
-		if ( lIndex < heap.size() && heap.get(lIndex) < heap.get(currentIndex) ) {
+		if ( lIndex < size && heap.get(lIndex) < heap.get(currentIndex) ) {
 			smallestIndex = lIndex;
 		} else {
 			smallestIndex = currentIndex;
 		}
-		if (rIndex < heap.size() && heap.get(rIndex) < heap.get(smallestIndex)) {
+		if (rIndex < size && heap.get(rIndex) < heap.get(smallestIndex)) {
 			smallestIndex = rIndex;
 		}
 		if(smallestIndex!=currentIndex) {
@@ -113,20 +121,20 @@ public class BoundedMinHeap {
 	}
 	
 	protected void buildMinHeap() {
-		for(int i = 0; i <= heap.size()/2; i++) {
+		for(int i = 0; i <= size/2; i++) {
 			minHeapify(i);
 		}
 	}
 	
 	protected boolean verifyHeapProperty() {
-		if(heap.size()==0) { return false; }
-		for(int parentIndex = 0; parentIndex <= heap.size()/2; parentIndex++) {
+		if(size==0) { return false; }
+		for(int parentIndex = 0; parentIndex <= size/2; parentIndex++) {
 			int lIndex = leftChild(parentIndex);
-			if(lIndex < heap.size() && heap.get(lIndex) < heap.get(parentIndex)) {
+			if(lIndex < size && heap.get(lIndex) < heap.get(parentIndex)) {
 					return false;
 			}
 			int rIndex = rightChild(parentIndex);
-			if(rIndex < heap.size() && heap.get(rIndex) < heap.get(parentIndex)) {
+			if(rIndex < size && heap.get(rIndex) < heap.get(parentIndex)) {
 				return false;
 			}		
 		}
@@ -158,15 +166,27 @@ public class BoundedMinHeap {
 	
 	protected BoundedMinHeap(ArrayList<Long> array) {
 		this.maxSize=array.size();
+		this.size=this.maxSize;
 		heap = array;
 	}
 	
 	protected void setHeap(ArrayList<Long> heap) {
 		this.heap=heap;
+		this.maxSize=heap.size();
+		this.size=this.maxSize;
 	}
 	
 	@Override
 	public String toString() {
 		return heap.toString();
+	}
+	
+	public void heapSort() {
+		buildMinHeap();
+		for(int i = 0;  i < size - 2 ; i++) {
+			exchange(i, 0);
+			size--;
+			minHeapify(size-1);
+		}
 	}
 }

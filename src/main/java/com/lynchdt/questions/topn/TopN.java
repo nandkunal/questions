@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
  * are periodically and finally merged into a BoundedMinHeap to get the top-N of the top-N in M.
  */
 public class TopN {
-
+	
 	/**
 	 * A bounded blocking queue allows back-off for the producers and 
 	 * blocking takes for the workers. Very convenient. 

@@ -133,4 +133,12 @@ public class BoundedMinHeapTest {
 		
 		assertFalse(heap.verifyHeapProperty());
 	}
+	
+	@Test public void heapSort_givenUnorderedHeap_sorts() {
+		heap.setHeap(Lists.newArrayList(6L, 5L, 19L, 4L, 9L, 28L));
+		
+		heap.heapSort();
+		
+		System.out.println(heap.toString());
+	}
 }
