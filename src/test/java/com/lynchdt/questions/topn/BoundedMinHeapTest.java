@@ -139,6 +139,6 @@ public class BoundedMinHeapTest {
 		
 		heap.heapSort();
 		
-		System.out.println(heap.toString());
+		assertEquals("[28, 9, 6, 4, 3, 1]", heap.toString());
 	}
 }
