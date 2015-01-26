@@ -113,7 +113,7 @@ public class TopN {
 			for (TopNWorker worker : workers) {
 				worker.applyToHeap(overallHeap);
 			}
-			;
+			overallHeap.heapSort();
 			System.out.println("Top " + this.N
 					+ " results after about " + linesRead() + " lines "
 					+ overallHeap.toString());
@@ -130,8 +130,13 @@ public class TopN {
 		waitForWorkersToFinish();
 		cleanUp();
 		mergePartialResults();
+		sortAndPrint();
+	}
+	
+	private void sortAndPrint() {
+		overallHeap.heapSort();
 		System.out.println("Top-" + this.N + " -> "
-				+ overallHeap.toString());
+			+ overallHeap.toString());
 	}
 	
 	private void waitForQueueToDrain() throws Exception {
