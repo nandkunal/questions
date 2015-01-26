@@ -32,7 +32,7 @@ public class BoundedMinHeap {
 	private int maxSize;
 	/**
 	 * Maintain this separate to heap.size() for purposes of 
-	 * HeapSort later.
+	 * HeapSort later. 
 	 */
 	private int size = 0;
 	
@@ -73,7 +73,7 @@ public class BoundedMinHeap {
 			size++;
 		}
 		else if (heap.get(0)<value) {
-			if(size==maxSize) {
+			if(heap.size()==maxSize) {
 				extractMin();
 			}
 			heap.add(Long.MAX_VALUE);
