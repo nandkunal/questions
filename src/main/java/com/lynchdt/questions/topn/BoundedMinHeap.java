@@ -8,12 +8,11 @@ import java.util.ArrayList;
  * This is useful for Top-N since the minimum property of the heap will 
  * mean the smallest number in the set N so far will be the root node. Removal 
  * of the smallest number can be done in O(1) time. This compares to O(n) time for searching
- * the smallest element in a max heap or unsorted list. After replacement the heap may then be broken,
+ * the smallest element in a max heap or bog standard list iteration. After replacement the heap may then be broken,
  * but sifting the replacement number up the heap to restore the heap property
- * can be done in O(h) time. With respect to space, we can use a bounded min-heap of size-N
+ * can be done in O(log n) time. With respect to space, we can use a bounded min-heap of size-N
  * and simply evict the minimum when we hit the bound. The top N numbers are simple O(n) 
- * iteration over the heap. There was no sorting requirement, but heap-sort would fit in 
- * nicely here. I'll come back to that if I have time. 
+ * iteration over the heap.
  * 
  * Implementation adapted from Intro to Algorithms - Chapter 6.
  **/
