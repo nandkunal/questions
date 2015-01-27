@@ -126,7 +126,7 @@ public class BoundedMinHeap {
 	}
 	
 	protected void buildMinHeap() {
-		for(int i = 0; i <= size/2; i++) {
+		for(int i = size - 1; i >= 0; i--) {
 			minHeapify(i);
 		}
 	}

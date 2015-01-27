@@ -105,6 +105,16 @@ public class BoundedMinHeapTest {
 		
 		assertTrue(heap.verifyHeapProperty());
 	}
+	
+	@Test public void buildMinHeap_givenOtherSpecificArray_buildsMinHeap() {
+		heap = new BoundedMinHeap(Lists.newArrayList(28L, 17L, 29L, 3L, 9L));
+		
+		heap.buildMinHeap();
+		
+		System.out.println(heap.toString());
+		assertTrue(heap.verifyHeapProperty());
+		
+	}
 
 	@Test public void verifyHeapProperty_givenMinHeap_returnsTrue() {
 		/**
