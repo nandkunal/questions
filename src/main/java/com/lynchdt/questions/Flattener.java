@@ -34,9 +34,6 @@ public class Flattener {
 		return this.integerList;
 	}
 	
-	/**
-	 * Re
-	 */
 	private void flatten(Iterator<?> iterator) {
 		if(!iterator.hasNext()) { return; }
 		Object next = iterator.next();

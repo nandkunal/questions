@@ -111,9 +111,7 @@ public class BoundedMinHeapTest {
 		
 		heap.buildMinHeap();
 		
-		System.out.println(heap.toString());
 		assertTrue(heap.verifyHeapProperty());
-		
 	}
 
 	@Test public void verifyHeapProperty_givenMinHeap_returnsTrue() {
@@ -136,7 +134,6 @@ public class BoundedMinHeapTest {
 		
 		assertFalse(heap.verifyHeapProperty());
 	}
-	
 	
 	@Test public void verifyHeap_givenNonMinHeap_returnsFalse() {
 		heap.setHeap(Lists.newArrayList(1L, 22L, 6L, 16L, 9L, 28L));
