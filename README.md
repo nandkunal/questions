@@ -4,8 +4,6 @@ I have written this in Java here
 * [Flattener.java](https://github.com/lynchd/questions/blob/master/src/main/java/com/lynchdt/questions/Flattener.java) 	
 * [FlattenerTest.java](https://github.com/lynchd/questions/blob/master/src/test/java/com/lynchdt/questions/FlattenerTest.java)
 
-The [repo here](https://github.com/lynchd/questions/) contains my answers to 4 and 5 as well as means to get things running for yourself. 
-
 To run all tests execute 
 ```
 ./gradlew test 
